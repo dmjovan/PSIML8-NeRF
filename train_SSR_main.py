@@ -9,7 +9,7 @@ from NeRF.datasets.scannet import scannet_datasets
 
 from NeRF.training import trainer
 
-from tqdm import  trange
+from tqdm import trange
 import time
 
 def train():
