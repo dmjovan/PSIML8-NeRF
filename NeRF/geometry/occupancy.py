@@ -75,8 +75,6 @@ def make_3D_grid_np(occ_range, dim, device, transform=None, scale=None):
 
     return grid_3d
 
-
-
 def chunk_alphas(pc, chunk_size, fc_occ_map, n_embed_funcs, B_layer,):
     n_pts = pc.shape[0]
     n_chunks = int(np.ceil(n_pts / chunk_size))

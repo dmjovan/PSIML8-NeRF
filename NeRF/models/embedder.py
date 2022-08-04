@@ -1,11 +1,11 @@
 import torch
-torch.autograd.set_detect_anomaly(True)
 import torch.nn as nn
-import torch.nn.functional as F
-import numpy as np
 
-# Positional encoding (section 5.1)
+torch.autograd.set_detect_anomaly(True)
+
+# Positional encoding
 class Embedder:
+
     def __init__(self, **kwargs):
         self.kwargs = kwargs
         self.create_embedding_fn()

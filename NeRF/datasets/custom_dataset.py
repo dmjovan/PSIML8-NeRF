@@ -3,7 +3,7 @@ import glob
 import numpy as np
 from torch.utils.data import Dataset
 
-class LegoDataset(Dataset):
+class CustomDataset(Dataset):
 
     def __init__(self, data_dir):
 

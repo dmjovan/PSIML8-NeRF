@@ -13,16 +13,6 @@ def get_rays(H, W, focal, c2w):
     rays_o = c2w[:3,-1].expand(rays_d.shape)
     return rays_o, rays_d
 
-
-def get_rays_np(H, W, focal, c2w):
-    i, j = np.meshgrid(np.arange(W, dtype=np.float32), np.arange(H, dtype=np.float32), indexing='xy')
-    # Rotate ray directions from camera frame to the world frame
-    rays_d = np.sum(dirs[..., np.newaxis, :] * c2w[:3,:3], -1)  # dot product, equals to: [c2w.dot(dir) for dir in dirs]
-    # Translate camera frame's origin to the world frame. It is the origin of all rays.
-    rays_o = np.broadcast_to(c2w[:3,-1], np.shape(rays_d))
-    return rays_o, rays_d
-
-
 # Ray helpers
 def get_rays_camera(B, H, W, fx, fy,  cx, cy, depth_type, convention="opencv"):
 
