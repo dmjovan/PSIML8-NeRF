@@ -1,6 +1,6 @@
 import torch
 import torch.nn.functional as F
-from SSR.training.training_utils import batchify
+from NeRF.training.training_utils import batchify
 
 
 def run_network_compund(inputs, fn, embed_fn, netchunk=1024 * 64):

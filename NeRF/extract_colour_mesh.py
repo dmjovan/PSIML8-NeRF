@@ -4,16 +4,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import argparse
-from SSR.datasets.replica import replica_datasets
-from SSR.datasets.scannet import scannet_datasets
-from SSR.datasets.replica_nyu import replica_nyu_cnn_datasets
-from SSR.datasets.scannet import scannet_datasets
+from NeRF.datasets.replica import replica_datasets
+from NeRF.datasets.scannet import scannet_datasets
+from NeRF.datasets.replica_nyu import replica_nyu_cnn_datasets
+from NeRF.datasets.scannet import scannet_datasets
 import open3d as o3d
 
-from SSR.training import trainer
-from SSR.models.model_utils import run_network
-from SSR.geometry.occupancy import grid_within_bound
-from SSR.visualisation import open3d_utils
+from NeRF.training import trainer
+from NeRF.models.model_utils import run_network
+from NeRF.geometry.occupancy import grid_within_bound
+from NeRF.visualisation import open3d_utils
 import numpy as np
 import yaml
 import json

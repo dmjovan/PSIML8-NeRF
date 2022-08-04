@@ -152,7 +152,7 @@ class Replica_CNN_NYU(Dataset):
         if nyu_mode == "nyu13" or nyu_mode == "gt_nyu13":
             self.semantic_classes = np.arange(14) # 0-void, 1-13 valid classes
             self.num_semantic_class = 14 # 13 valid class + 1 void class
-            from SSR.utils import image_utils
+            from NeRF.utils import image_utils
             self.colour_map_np = image_utils.nyu13_colour_code
         elif nyu_mode=="nyu34":
             self.semantic_classes = np.arange(35)  # 0-void, 1-34 valid classes

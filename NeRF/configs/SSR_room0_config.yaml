@@ -1,14 +1,14 @@
 
 experiment:
-  scene_file: "PATHtoREPLICA/Replica/mesh/room_0/habitat/" # room_0,room_01, etc.
-  save_dir: "PATHtoLOGS"  # where to store ckpts and rendering
-  dataset_dir: "PATHtoRENDERED_REPLICA_DATA"
+  scene_file: "C:/Users/psiml8/Desktop/Project/replica_dataset/semantic_info/room_0/" # room_0,room_01, etc.
+  save_dir: "C:/Users/psiml8/Desktop/Project/replica_dataset/room_0/logs/"  # where to store ckpts and rendering
+  dataset_dir: "C:/Users/psiml8/Desktop/Project/replica_dataset/room_0/Sequence_1/"
   convention: "opencv"
   width: 320
   height: 240
   gpu: "0"
   
-  enable_semantic: True
+  enable_semantic: False
   enable_depth: True
   endpoint_feat: False
 
@@ -17,8 +17,8 @@ model:
   netwidth: 256
   netdepth_fine: 8
   netwidth_fine: 256
-  chunk: 1024*128  # number of rays processed in parallel, decrease if running out of memory
-  netchunk: 1024*128  # number of pts sent through network in parallel, decrease if running out of memory
+  chunk: 1024*32   # number of rays processed in parallel, decrease if running out of memory
+  netchunk: 1024*32 #umber of pts sent through network in parallel, decrease if running out of memory
 
 render:
     N_rays: 32*32*1  # average number of rays sampled from each sample within a batch
@@ -33,8 +33,8 @@ render:
     test_viz_factor: 1  # down scaling factor when rendering test and training images
     no_batching: True  # True-sample random pixels from random images; False-sample from all random pixels from all images
     depth_range: [0.1, 10.0]
-    white_bkgd: false  # set to render synthetic data on a white bkgd (always use for dvoxels)
-
+    white_bkgd: false  # set to render synthetic data on a white bkgd (always use for dvoxels
+    
 train:
     lrate: 5e-4
     lrate_decay: 250e3

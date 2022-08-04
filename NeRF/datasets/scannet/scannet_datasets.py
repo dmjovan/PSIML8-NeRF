@@ -5,8 +5,8 @@ from skimage.io import imread
 import cv2
 import imageio
 
-from SSR.datasets.scannet.scannet_utils import load_scannet_nyu40_mapping, load_scannet_nyu13_mapping
-from SSR.utils import image_utils
+from NeRF.datasets.scannet.scannet_utils import load_scannet_nyu40_mapping, load_scannet_nyu13_mapping
+from NeRF.utils import image_utils
 class ScanNet_Dataset(object):
     def __init__(self, scene_dir, img_h=None, img_w=None, sample_step=1, save_dir=None, mode="nyu40"):
         # we only use rgb+poses from Scannet

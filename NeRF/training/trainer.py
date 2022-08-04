@@ -10,13 +10,13 @@ import yaml
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from SSR.models.semantic_nerf import get_embedder, Semantic_NeRF
-from SSR.models.rays import sampling_index, sample_pdf, create_rays
-from SSR.training.training_utils import batchify_rays, calculate_segmentation_metrics, calculate_depth_metrics
-from SSR.models.model_utils import raw2outputs
-from SSR.models.model_utils import run_network 
-from SSR.visualisation.tensorboard_vis import TFVisualizer
-from SSR.utils import image_utils
+from NeRF.models.semantic_nerf import get_embedder, Semantic_NeRF
+from NeRF.models.rays import sampling_index, sample_pdf, create_rays
+from NeRF.training.training_utils import batchify_rays, calculate_segmentation_metrics, calculate_depth_metrics
+from NeRF.models.model_utils import raw2outputs
+from NeRF.models.model_utils import run_network 
+from NeRF.visualisation.tensorboard_vis import TFVisualizer
+from NeRF.utils import image_utils
 from tqdm import tqdm
 from imgviz import label_colormap, depth2rgb
 
@@ -41,14 +41,14 @@ class SSRTrainer(object):
 
         self.training = True  # training mode by default
         # create tfb Summary writers and folders
-        tf_log_dir = os.path.join(config["experiment"]["save_dir"], "tfb_logs")
+        tf_log_dir = os.path.join(config["experiment"]["save_dir"], "tensorboard_logs")
         if not os.path.exists(tf_log_dir):
             os.makedirs(tf_log_dir)
         self.tfb_viz = TFVisualizer(tf_log_dir, config["logging"]["step_log_tfb"], config)
             
     def save_config(self):
         # save config to save_dir for the convience of checking config later
-        with open(os.path.join(self.config["experiment"]["save_dir"], 'exp_config.yaml'), 'w') as outfile:
+        with open(os.path.join(self.config["experiment"]["save_dir"], 'training_config_copy.yaml'), 'w') as outfile:
             yaml.dump(self.config, outfile, default_flow_style=False)
 
     def set_params_replica(self):
@@ -957,7 +957,7 @@ class SSRTrainer(object):
         if global_step % float(self.config["logging"]["step_save_ckpt"])==0:
             ckpt_dir = os.path.join(self.save_dir, "checkpoints")
             if not os.path.exists(ckpt_dir):
-                os.makedirs(ckpt_dir)
+                os.makedirs(ckpt_dir)   
 
             ckpt_file = os.path.join(ckpt_dir, '{:06d}.ckpt'.format(global_step))
             torch.save({

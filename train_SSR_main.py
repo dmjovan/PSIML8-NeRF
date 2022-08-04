@@ -2,21 +2,19 @@ import yaml
 import os
 import argparse
 
-from SSR.datasets.replica import replica_datasets
-from SSR.datasets.scannet import scannet_datasets
-from SSR.datasets.replica_nyu import replica_nyu_cnn_datasets
-from SSR.datasets.scannet import scannet_datasets
+from NeRF.datasets.replica import replica_datasets
+from NeRF.datasets.scannet import scannet_datasets
+from NeRF.datasets.replica_nyu import replica_nyu_cnn_datasets
+from NeRF.datasets.scannet import scannet_datasets
 
-from SSR.training import trainer
+from NeRF.training import trainer
 
 from tqdm import  trange
 import time
 
 def train():
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--config_file', type=str, default="/home/shuaifeng/Documents/PhD_Research/CodeRelease/SemanticSceneRepresentations/SSR/configs/SSR_room2_config_release.yaml", 
-    #                     help='config file name.')
-    parser.add_argument('--config_file', type=str, default="/home/shuaifeng/Documents/PhD_Research/CodeRelease/SemanticSceneRepresentations/SSR/configs/SSR_room0_config_test.yaml", 
+    parser.add_argument('--config_file', type=str, default=r"C:\Users\psiml8\Desktop\Project\SSR\configs\SSR_room0_config.yaml", 
                     help='config file name.')
     parser.add_argument('--dataset_type', type=str, default="replica", choices= ["replica", "replica_nyu_cnn", "scannet"], 
                         help='the dataset to be used,')
