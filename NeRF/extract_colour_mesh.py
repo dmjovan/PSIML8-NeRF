@@ -4,10 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import argparse
-from NeRF.datasets.replica import replica_datasets
-from NeRF.datasets.scannet import scannet_datasets
-from NeRF.datasets.replica_nyu import replica_nyu_cnn_datasets
-from NeRF.datasets.scannet import scannet_datasets
+from NeRF.datasets.replica import replica_dataset
 import open3d as o3d
 
 from NeRF.training import trainer
@@ -102,7 +99,7 @@ def train():
     train_ids = list(range(0, total_num, step))
     test_ids = [x+2 for x in train_ids]    
 
-    replica_data_loader = replica_datasets.ReplicaDatasetCache(data_dir=training_data_dir,
+    replica_data_loader = replica_dataset.ReplicaDatasetCache(data_dir=training_data_dir,
                                                                 train_ids=train_ids, test_ids=test_ids,
                                                                 img_h=config["experiment"]["height"],
                                                                 img_w=config["experiment"]["width"])
