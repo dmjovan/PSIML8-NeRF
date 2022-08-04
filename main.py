@@ -73,7 +73,7 @@ if __name__=="__main__":
         N_iters = int(float(config["train"]["N_iters"])) + 1
 
         print("#################################################################################")
-        print("-------------------------- Begining og trainining loop -------------------------")
+        print("-------------------------- Begining of training loop -------------------------")
 
         for i in range(0, N_iters):
 
