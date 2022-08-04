@@ -17,7 +17,7 @@ def train():
 
     parser.add_argument("--config_file", 
                         type=str, 
-                        default=r"C:\Users\psiml8\Desktop\Project\SSR\configs\room0_config.yaml", 
+                        default=r"C:\Users\psiml8\Desktop\Project\NeRF\configs\room0_config.yaml", 
                         help="Config file name.")
 
     parser.add_argument("--dataset_type", 

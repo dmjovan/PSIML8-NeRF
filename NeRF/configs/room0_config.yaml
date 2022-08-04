@@ -1,8 +1,8 @@
 
 experiment:
-  scene_file: "C:/Users/psiml8/Desktop/Project/replica_dataset/semantic_info/room_0/" # room_0,room_01, etc.
-  save_dir: "C:/Users/psiml8/Desktop/Project/replica_dataset/room_0/logs/"  # where to store ckpts and rendering
-  dataset_dir: "C:/Users/psiml8/Desktop/Project/replica_dataset/room_0/Sequence_1/"
+  scene_file: "C:/Users/psiml8/Desktop/Project/datasets/replica/semantic_info/room_0/" # room_0,room_01, etc.
+  save_dir: "C:/Users/psiml8/Desktop/Project/datasets/replica/room_0/logs/"  # where to store ckpts and rendering
+  dataset_dir: "C:/Users/psiml8/Desktop/Project/datasets/replica/room_0/Sequence_2/"
   convention: "opencv"
   width: 320
   height: 240
