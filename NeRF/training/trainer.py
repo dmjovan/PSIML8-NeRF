@@ -10,7 +10,9 @@ import yaml
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from NeRF.models.semantic_nerf import get_embedder, Semantic_NeRF
+from NeRF.models.embedder import get_embedder
+from NeRF.models.nerf import NeRF
+from NeRF.models.semantic_nerf import SemanticNeRF
 from NeRF.models.rays import sampling_index, sample_pdf, create_rays
 from NeRF.training.training_utils import batchify_rays, calculate_segmentation_metrics, calculate_depth_metrics
 from NeRF.models.model_utils import raw2outputs
@@ -365,7 +367,7 @@ class NeRFTrainer:
         pts_coarse_sampled = rays_o[..., None, :] + rays_d[..., None, :] * z_vals[..., :, None]  # [N_rays, N_samples, 3]
 
         raw_noise_std = self.raw_noise_std if self.training else 0
-        raw_coarse = run_network(pts_coarse_sampled, viewdirs, self.ssr_net_coarse,
+        raw_coarse = run_network(pts_coarse_sampled, viewdirs, self.nerf_net_coarse,
                                  self.embed_fn, self.embeddirs_fn, netchunk=self.netchunk)
         rgb_coarse, disp_coarse, acc_coarse, weights_coarse, depth_coarse, sem_logits_coarse, feat_map_coarse = \
             raw2outputs(raw_coarse, z_vals, rays_d, raw_noise_std, self.white_bkgd, enable_semantic = self.enable_semantic,
@@ -384,7 +386,7 @@ class NeRFTrainer:
             pts_fine_sampled = rays_o[..., None, :] + rays_d[..., None, :] * z_vals[..., :, None]  # [N_rays, N_samples + N_importance, 3]
 
 
-            raw_fine = run_network(pts_fine_sampled, viewdirs, lambda x: self.ssr_net_fine(x, self.endpoint_feat),
+            raw_fine = run_network(pts_fine_sampled, viewdirs, lambda x: self.nerf_net_fine(x, self.endpoint_feat),
                         self.embed_fn, self.embeddirs_fn, netchunk=self.netchunk)
 
             rgb_fine, disp_fine, acc_fine, weights_fine, depth_fine, sem_logits_fine, feat_map_fine = \
@@ -425,7 +427,7 @@ class NeRFTrainer:
             Instantiate NeRF's MLP model 
         """
 
-        nerf_model = Semantic_NeRF
+        nerf_model = SemanticNeRF
 
         embed_fn, input_ch = get_embedder(self.config["render"]["multires"], self.config["render"]["i_embed"], scalar_factor=10)
 
@@ -454,8 +456,8 @@ class NeRFTrainer:
         # Create optimizer
         optimizer = torch.optim.Adam(params=grad_vars, lr=self.lrate)
 
-        self.ssr_net_coarse = model
-        self.ssr_net_fine = model_fine
+        self.nerf_net_coarse = model
+        self.nerf_net_fine = model_fine
         self.embed_fn = embed_fn
         self.embeddirs_fn = embeddirs_fn
         self.optimizer = optimizer
@@ -588,8 +590,8 @@ class NeRFTrainer:
             ckpt_file = os.path.join(ckpt_dir, '{:06d}.ckpt'.format(global_step))
             torch.save({
                 'global_step': global_step,
-                'network_coarse_state_dict': self.ssr_net_coarse.state_dict(),
-                'network_fine_state_dict': self.ssr_net_fine.state_dict(),
+                'network_coarse_state_dict': self.nerf_net_coarse.state_dict(),
+                'network_fine_state_dict': self.nerf_net_fine.state_dict(),
                 'optimizer_state_dict': self.optimizer.state_dict(),
             }, ckpt_file)
             print('Saved checkpoints at', ckpt_file)
@@ -597,8 +599,8 @@ class NeRFTrainer:
         # render and save training-set images 
         if global_step % self.config["logging"]["step_vis_train"]==0 and global_step > 0:
             self.training = False  # enable testing mode before rendering results, need to set back during training!
-            self.ssr_net_coarse.eval()
-            self.ssr_net_fine.eval()
+            self.nerf_net_coarse.eval()
+            self.nerf_net_fine.eval()
             trainsavedir = os.path.join(self.config["experiment"]["save_dir"], "train_render", 'step_{:06d}'.format(global_step))
             os.makedirs(trainsavedir, exist_ok=True)
             print(' {} train images'.format(self.num_train))
@@ -609,8 +611,8 @@ class NeRFTrainer:
             print('Saved training set')
 
             self.training = True  # set training flag back after rendering images
-            self.ssr_net_coarse.train()
-            self.ssr_net_fine.train()
+            self.nerf_net_coarse.train()
+            self.nerf_net_fine.train()
 
             with torch.no_grad():
                 if self.enable_semantic:
@@ -678,8 +680,8 @@ class NeRFTrainer:
         # render and save test images, corresponding videos
         if global_step % self.config["logging"]["step_val"]==0 and global_step > 0:
             self.training = False  # enable testing mode before rendering results, need to set back during training!
-            self.ssr_net_coarse.eval()
-            self.ssr_net_fine.eval()
+            self.nerf_net_coarse.eval()
+            self.nerf_net_fine.eval()
             testsavedir = os.path.join(self.config["experiment"]["save_dir"], "test_render", 'step_{:06d}'.format(global_step))
             os.makedirs(testsavedir, exist_ok=True)
             print(' {} test images'.format(self.num_test))
@@ -689,8 +691,8 @@ class NeRFTrainer:
 
 
             self.training = True  # set training flag back after rendering images
-            self.ssr_net_coarse.train()
-            self.ssr_net_fine.train()
+            self.nerf_net_coarse.train()
+            self.nerf_net_fine.train()
 
 
             with torch.no_grad():

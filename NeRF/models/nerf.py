@@ -2,18 +2,11 @@ import torch
 torch.autograd.set_detect_anomaly(True)
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
 
-from embedder import fc_block
+class NeRF(nn.Module):
 
-class SemanticNeRF(nn.Module):
-    """
-    Compared to the NeRF class wich also predicts semantic logits from MLPs, here we make the semantic label only a function of 3D position 
-    instead of both positon and viewing directions.
-    """
-    def __init__(self, enable_semantic, num_semantic_classes, D=8, W=256, input_ch=3, input_ch_views=3, output_ch=4, skips=[4], use_viewdirs=False,
-                 ):
-        super(SemanticNeRF, self).__init__()
+    def __init__(self, D=8, W=256, input_ch=3, input_ch_views=3, output_ch=4, skips=[4], use_viewdirs=False):
+        super(NeRF, self).__init__()
         """
                 D: number of layers for density (sigma) encoder
                 W: number of hidden units in each layer
@@ -27,29 +20,23 @@ class SemanticNeRF(nn.Module):
         self.input_ch_views = input_ch_views
         self.skips = skips
         self.use_viewdirs = use_viewdirs
-        self.enable_semantic = enable_semantic
 
-        # build the encoder
+        # position encoder
         self.pts_linears = nn.ModuleList(
             [nn.Linear(input_ch, W)] + [nn.Linear(W, W) if i not in self.skips else nn.Linear(W + input_ch, W) for i in
                                         range(D - 1)])
 
-        ### Implementation according to the official code release (https://github.com/bmild/nerf/blob/master/run_nerf_helpers.py#L104-L105)
-
-        # Another layer is used to 
         self.views_linears = nn.ModuleList([nn.Linear(input_ch_views + W, W // 2)])
         if use_viewdirs:
             self.feature_linear = nn.Linear(W, W)
             self.alpha_linear = nn.Linear(W, 1)
-            if enable_semantic:
-                self.semantic_linear = nn.Sequential(fc_block(W, W // 2), nn.Linear(W // 2, num_semantic_classes))
             self.rgb_linear = nn.Linear(W // 2, 3)
         else:
             self.output_linear = nn.Linear(W, output_ch)
 
     def forward(self, x, show_endpoint=False):
         """
-        Encodes input (xyz+dir) to rgb+sigma+semantics raw output
+        Encodes input (xyz+dir) to rgb+sigma raw output
         Inputs:
             x: (B, self.in_channels_xyz(+self.in_channels_dir))
                the embedded vector of 3D xyz position and viewing direction
@@ -65,8 +52,6 @@ class SemanticNeRF(nn.Module):
         if self.use_viewdirs:
             # if using view-dirs, output occupancy alpha as well as features for concatenation
             alpha = self.alpha_linear(h)
-            if self.enable_semantic:
-                sem_logits = self.semantic_linear(h)
             feature = self.feature_linear(h)
 
             h = torch.cat([feature, input_views], -1)
@@ -79,10 +64,7 @@ class SemanticNeRF(nn.Module):
                 endpoint_feat = h
             rgb = self.rgb_linear(h)
 
-            if self.enable_semantic:
-                outputs = torch.cat([rgb, alpha, sem_logits], -1)
-            else:
-                outputs = torch.cat([rgb, alpha], -1)
+            outputs = torch.cat([rgb, alpha], -1)
         else:
             outputs = self.output_linear(h)
 

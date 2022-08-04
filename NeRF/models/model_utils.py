@@ -2,6 +2,11 @@ import torch
 import torch.nn.functional as F
 from NeRF.training.training_utils import batchify
 
+# Misc
+img2mse = lambda x, y: torch.mean((x - y) ** 2)
+mse2psnr = lambda x: -10. * torch.log(x) / torch.log(torch.Tensor([10.]))
+to8b = lambda x: (255 * np.clip(x, 0, 1)).astype(np.uint8)
+
 
 def run_network_compund(inputs, fn, embed_fn, netchunk=1024 * 64):
     """Prepares inputs and applies network 'fn'.
