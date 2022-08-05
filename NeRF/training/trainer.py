@@ -23,6 +23,7 @@ from nerf.models.rays import sampling_index, sample_pdf, create_rays
 
 from nerf.models.model_utils import *
 from nerf.training.training_utils import *
+from nerf.visualisation.video_utils import *
 
 DATASET_TO_CONFIG_PATH = {
     "replica": r"nerf\configs\room0_config.yaml",
@@ -701,3 +702,46 @@ class NeRFTrainer:
         rgbs = np.stack(rgbs, 0)
 
         return rgbs
+
+    def create_video(self):
+
+        ckpt_path = self.config["video"]["prev_ckpt_path"]
+
+        if os.path.exists(ckpt_path):
+
+            self.training = False
+
+            checkpoint = torch.load(ckpt_path)
+            self.nerf_net_coarse.load_state_dict(checkpoint['network_coarse_state_dict'])
+            self.nerf_net_fine.load_state_dict(checkpoint['network_fine_state_dict'])
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+            self.nerf_net_coarse.eval()
+            self.nerf_net_fine.eval()
+            
+            with torch.no_grad():
+
+                video_save_dir = os.path.join(self.config["experiment"]["save_dir"], "videos")
+
+                poses = generate_new_poses()
+
+                rays = create_rays(poses.shape[0],
+                                   poses, 
+                                   self.H_scaled, 
+                                   self.W_scaled, 
+                                   self.fx_scaled, 
+                                   self.fy_scaled,
+                                   self.cx_scaled, 
+                                   self.cy_scaled,
+                                   self.depth_close_bound, 
+                                   self.depth_far_bound, 
+                                   use_viewdirs=self.use_viewdir, 
+                                   convention=self.convention)
+
+                rgbs = self.render_path(rays, save_dir=video_save_dir)
+                
+                imageio.mimwrite(os.path.join(video_save_dir, 'video_init.mp4'), to8b_np(rgbs), fps=30, quality=8)
+
+            self.training = True
+            self.nerf_net_coarse.train()
+            self.nerf_net_fine.train()

@@ -205,7 +205,8 @@ def create_rays(num_rays, Ts_c2w, height, width, fx, fy, cx, cy, near, far, c2w_
     Note: Use either convention is fine, but the corresponding pose should follow the same convention.
 
     """
-    print('prepare rays')
+    
+    print("Preparing rays")
 
     rays_cam = get_rays_camera(num_rays, height, width, fx, fy, cx, cy, depth_type=depth_type, convention=convention) # [N, H, W, 3]
 
