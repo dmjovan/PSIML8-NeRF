@@ -60,11 +60,16 @@ if __name__=="__main__":
 
         print("Training finished")
 
+        print("------------------------------- Creating video --------------------------------")
+        nerf_trainer.create_video("video_final.mp4")
+
+        print("Video created")
+
     except KeyboardInterrupt:
         print("###############################################################################")
         print("---------------------------- Training Interupted ------------------------------")
 
         print("------------------------------- Creating video --------------------------------")
-        nerf_trainer.create_video("video_final.mp4")
+        nerf_trainer.create_video("video_final_training_interupted.mp4")
 
         print("Video created")

@@ -1,6 +1,6 @@
 
 experiment:
-  save_dir: "C:/Users/psiml8/Desktop/Project/training_logs/lego/" 
+  save_dir: "C:/Users/psiml8/Desktop/Project/training_logs/lego/log2/" 
   dataset_dir: "C:/Users/psiml8/Desktop/Project/datasets/lego/"
   convention: "opengl"
   width: 100
@@ -37,7 +37,7 @@ train:
     lrate: 5e-4
     lrate_decay_rate: 0.1
     lrate_decay_steps: 35000
-    N_iters: 50000
+    N_iters: 150000
 
 logging:
     step_log_print: 1  # frequency of console print
@@ -47,4 +47,4 @@ logging:
     step_render_train: 5000 # frequency of rendering on training data
     
 video:
-    prev_ckpt_path: "C:/Users/psiml8/Desktop/Project/training_logs/lego/logs1/checkpoints/50000.ckpt" 
+    prev_ckpt_path: "C:/Users/psiml8/Desktop/Project/training_logs/lego/log1/checkpoints/050000.ckpt" 

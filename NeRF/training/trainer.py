@@ -182,10 +182,8 @@ class NeRFTrainer:
 
         # add datasets to tfboard for comparison to rendered images
         self.tensorboard.tb_writer.add_image('Train/rgb_ground_truth', train_samples["image"], 0, dataformats='NHWC')
-        self.tensorboard.tb_writer.add_image('Train/depth_ground_truth', self.viz_train_depth, 0, dataformats='NHWC')
 
         self.tensorboard.tb_writer.add_image('Test/rgb_ground_truth', test_samples["image"], 0, dataformats='NHWC')
-        self.tensorboard.tb_writer.add_image('Test/depth_ground_truth', self.viz_test_depth, 0, dataformats='NHWC')
 
     def set_data_params_lego(self):
         
@@ -280,10 +278,8 @@ class NeRFTrainer:
 
         # add datasets to tfboard for comparison to rendered images
         self.tensorboard.tb_writer.add_image('Train/rgb_ground_truth', train_samples["image"], 0, dataformats='NHWC')
-        self.tensorboard.tb_writer.add_image('Train/depth_ground_truth', self.viz_train_depth, 0, dataformats='NHWC')
 
         self.tensorboard.tb_writer.add_image('Test/rgb_ground_truth', test_samples["image"], 0, dataformats='NHWC')
-        self.tensorboard.tb_writer.add_image('Test/depth_ground_truth', self.viz_test_depth, 0, dataformats='NHWC')
 
     def set_data_params_custom(self):
         # TODO
@@ -722,7 +718,7 @@ class NeRFTrainer:
             self.nerf_net_fine.eval()
             
             with torch.no_grad():
-
+                
                 video_save_dir = os.path.join(self.config["experiment"]["save_dir"], "videos")
 
                 if not os.path.exists(video_save_dir):
@@ -743,10 +739,13 @@ class NeRFTrainer:
                                    use_viewdirs=self.use_viewdir, 
                                    convention=self.convention)
 
-                rgbs = self.render_path(rays, save_dir=video_save_dir)
+                rgbs = self.render_path(rays, save_dir=video_save_dir, save_img=False)
                 
                 imageio.mimwrite(os.path.join(video_save_dir, video_name), to8b_np(rgbs), fps=30, quality=8)
 
             self.training = True
             self.nerf_net_coarse.train()
             self.nerf_net_fine.train()
+        
+        else:
+            print("Specified checkpoint doesn't exist!")
