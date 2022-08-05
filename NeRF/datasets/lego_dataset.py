@@ -28,9 +28,8 @@ class LegoDataset(Dataset):
 
        # training samples
         for idx in self.train_ids:
-            image = self.rgb_list[idx] / 255.0
-            depth = np.zeros_like(image[:,:,0])
-            print(depth.shape)
+            image = self.rgb_list[idx]
+            depth = np.random.uniform(low=config["render"]["depth_range"][0]/config["render"]["depth_range"][1], high=1.0, size=image[:,:,0].shape)
             pose = self.poses[idx]
 
             self.train_samples["image"].append(image)
@@ -39,8 +38,8 @@ class LegoDataset(Dataset):
 
         # test samples
         for idx in self.test_ids:
-            image = self.rgb_list[idx] / 255.0
-            depth = np.zeros_like(image[:,:,0])
+            image = self.rgb_list[idx]
+            depth = np.random.uniform(low=config["render"]["depth_range"][0]/config["render"]["depth_range"][1], size=image[:,:,0].shape)
             pose = self.poses[idx]
 
             self.test_samples["image"].append(image)

@@ -405,7 +405,7 @@ class NeRFTrainer:
 
         # assert ray_shape[0] == self.n_rays  # this is not satisfied in test model
         fn = self.volumetric_rendering
-        all_ret = batchify_rays(fn, flat_rays, self.chunk)
+        all_ret = batchify_rays(fn, flat_rays.cuda(), self.chunk)
 
         for k in all_ret:
             k_sh = list(ray_shape[:-1]) + list(all_ret[k].shape[1:])
@@ -620,7 +620,7 @@ class NeRFTrainer:
             os.makedirs(train_save_dir, exist_ok=True)
 
             with torch.no_grad():
-                rgbs, deps = self.render_path(self.rays_vis, save_dir=train_save_dir)
+                rgbs = self.render_path(self.rays_vis, save_dir=train_save_dir)
 
             print('Saved rendered images from training set')
 
@@ -676,7 +676,7 @@ class NeRFTrainer:
                        f"PSNR_coarse: {psnr_coarse.item()}, PSNR_fine: {psnr_fine.item()}")
 
 
-    def render_path(self, rays, save_dir=None):
+    def render_path(self, rays, save_dir=None, save_img=True):
 
         rgbs = []
         
@@ -696,14 +696,16 @@ class NeRFTrainer:
             if save_dir is not None:
                 assert os.path.exists(save_dir)
                 rgb8 = to8b_np(rgbs[-1])
-                rgb_filename = os.path.join(save_dir, 'rgb_{:03d}.png'.format(i))
-                imageio.imwrite(rgb_filename, rgb8)
+
+                if save_img:
+                    rgb_filename = os.path.join(save_dir, 'rgb_{:03d}.png'.format(i))
+                    imageio.imwrite(rgb_filename, rgb8)
 
         rgbs = np.stack(rgbs, 0)
 
         return rgbs
 
-    def create_video(self):
+    def create_video(self, video_name):
 
         ckpt_path = self.config["video"]["prev_ckpt_path"]
 
@@ -723,6 +725,9 @@ class NeRFTrainer:
 
                 video_save_dir = os.path.join(self.config["experiment"]["save_dir"], "videos")
 
+                if not os.path.exists(video_save_dir):
+                    os.makedirs(video_save_dir)   
+
                 poses = generate_new_poses()
 
                 rays = create_rays(poses.shape[0],
@@ -740,7 +745,7 @@ class NeRFTrainer:
 
                 rgbs = self.render_path(rays, save_dir=video_save_dir)
                 
-                imageio.mimwrite(os.path.join(video_save_dir, 'video_init.mp4'), to8b_np(rgbs), fps=30, quality=8)
+                imageio.mimwrite(os.path.join(video_save_dir, video_name), to8b_np(rgbs), fps=30, quality=8)
 
             self.training = True
             self.nerf_net_coarse.train()

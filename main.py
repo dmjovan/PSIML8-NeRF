@@ -12,13 +12,13 @@ if __name__=="__main__":
 
     parser.add_argument("--dataset", 
                         type=str, 
-                        default="replica", 
+                        default="lego", 
                         choices= ["replica", "lego", "custom"], 
                         help="the dataset to be used")
 
     parser.add_argument("--video", 
                         type=str, 
-                        default="true",
+                        default="false",
                         help="create video initially from previous models")
 
     args = parser.parse_args()
@@ -39,7 +39,7 @@ if __name__=="__main__":
     if args.video.lower() == "true":
 
         print("------------------------------- Creating initial video --------------------------------")
-        nerf_trainer.create_video()
+        nerf_trainer.create_video("video_init.mp4")
 
         print("Video created")
 
@@ -65,6 +65,6 @@ if __name__=="__main__":
         print("---------------------------- Training Interupted ------------------------------")
 
         print("------------------------------- Creating video --------------------------------")
-        nerf_trainer.create_video()
+        nerf_trainer.create_video("video_final.mp4")
 
         print("Video created")
