@@ -196,8 +196,8 @@ class NeRFTrainer:
         self.hfov = 90
 
         # the pin-hole camera has the same value for fx and fy
-        self.fx = self.W / 2.0 / math.tan(math.radians(self.hfov / 2.0))
-        self.fy = self.fx
+        self.fx = self.dataset.focal
+        self.fy = self.dataset.focal
 
         self.cx = self.W / 2.0
         self.cy = self.H / 2.0
@@ -209,10 +209,9 @@ class NeRFTrainer:
         self.test_viz_factor = int(self.config["render"]["test_viz_factor"])
         self.H_scaled = self.H//self.test_viz_factor
         self.W_scaled = self.W//self.test_viz_factor
-
-        self.fx_scaled = self.W_scaled / 2.0 / math.tan(math.radians(self.hfov / 2.0))
-        self.fy_scaled = self.fx_scaled
-
+        
+        self.fx_scaled = self.fx/self.test_viz_factor
+        self.fy_scaled = self.fy/self.test_viz_factor
         self.cx_scaled = self.W_scaled / 2.0
         self.cy_scaled = self.H_scaled / 2.0
 
