@@ -1,17 +1,6 @@
 import torch
 import numpy as np
 
-# Ray helpers
-def get_rays(H, W, focal, c2w):
-    i, j = torch.meshgrid(torch.linspace(0, W-1, W), torch.linspace(0, H-1, H))  # pytorch's meshgrid has indexing='ij'
-    i = i.t()
-    j = j.t()
-    dirs = torch.stack([(i-W*.5)/focal, -(j-H*.5)/focal, -torch.ones_like(i)], -1)
-    # Rotate ray directions from camera frame to the world frame
-    rays_d = torch.sum(dirs[..., np.newaxis, :] * c2w[:3,:3], -1)  # dot product, equals to: [c2w.dot(dir) for dir in dirs]
-    # Translate camera frame's origin to the world frame. It is the origin of all rays.
-    rays_o = c2w[:3,-1].expand(rays_d.shape)
-    return rays_o, rays_d
 
 # Ray helpers
 def get_rays_camera(B, H, W, fx, fy,  cx, cy, depth_type, convention="opencv"):
@@ -55,90 +44,7 @@ def get_rays_world(T_WC, dirs_C):
     origins = T_WC[:, :3, -1]  # Bx3
     origins = torch.broadcast_tensors(origins[:, None, :], dirs_W)[0]
     return origins, dirs_W
-
-
-def get_rays_camera_np(B, H, W, fx, fy,  cx, cy, depth_type, convention="opencv"):
-    assert depth_type is "z" or depth_type is "euclidean"
-    i, j = np.meshgrid(np.arange(W, dtype=np.float32),
-                       np.arange(H, dtype=np.float32), indexing='xy')  # pytorch's meshgrid has default indexing='ij'
-
-    size = [B, H, W]
-
-    i_batch = np.empty(size, dtype=np.float32)
-    j_batch = np.empty(size, dtype=np.float32)
-    i_batch[:, :, :] = i[None, :, :]
-    j_batch[:, :, :] = j[None, :, :]
-
-    if convention == "opencv":
-        x = (i_batch - cx) / fx
-        y = (j_batch - cy) / fy
-        z = np.ones(size, dtype=np.float32)
-    elif convention == "opengl":
-        x = (i_batch - cx) / fx
-        y = -(j_batch - cy) / fy
-        z = -np.ones(size, dtype=np.float32)
-    else:
-        assert False
-
-    dirs = np.stack((x, y, z), axis=3)  # shape of [B, H, W, 3]
-
-    if depth_type == 'euclidean':
-        norm = np.norm(dirs, axis=3, keepdim=True)
-        dirs = dirs * (1. / norm)
-
-    return dirs
-
-
-def get_rays_world_np(T_WC, dirs_C):
-    R_WC = T_WC[:, :3, :3]  # Bx3x3
-    dirs_W = (R_WC * dirs_C[..., np.newaxis, :]).sum(axis=-1)  # dot product, equals to: [c2w.dot(dir) for dir in dirs]
-    # sum([B,3,3] * [B, H, W, 1, 3], axis=-1)  -->  [B, H, W, 3]
-    origins = T_WC[:, :3, -1]  # Bx3
-
-    return origins, dirs_W
-
-
-def ndc_rays(H, W, focal, near, rays_o, rays_d):
-
-    # Shift ray origins to near plane
-    # solves for the t value such that o + t * d = -near
-    t = -(near + rays_o[..., 2]) / rays_d[..., 2]
-    rays_o = rays_o + t[..., None] * rays_d
-
-    # Projection
-    o0 = -1. / (W / (2. * focal)) * rays_o[..., 0] / rays_o[..., 2]
-    o1 = -1. / (H / (2. * focal)) * rays_o[..., 1] / rays_o[..., 2]
-    o2 = 1. + 2. * near / rays_o[..., 2]
-
-    d0 = -1. / (W / (2. * focal)) * (rays_d[..., 0] / rays_d[..., 2] - rays_o[..., 0] / rays_o[..., 2])
-    d1 = -1. / (H / (2. * focal)) * (rays_d[..., 1] / rays_d[..., 2] - rays_o[..., 1] / rays_o[..., 2])
-    d2 = -2. * near / rays_o[..., 2]
-
-    rays_o = torch.stack([o0, o1, o2], -1)
-    rays_d = torch.stack([d0, d1, d2], -1)
-
-    return rays_o, rays_d
-
-
-def stratified_bins(min_depth,
-                    max_depth,
-                    n_bins,
-                    n_rays,
-                    device):
-
-    bin_limits = torch.linspace(
-        min_depth,
-        max_depth,
-        n_bins + 1,
-        device=device,
-    )
-    lower_limits = bin_limits[:-1]
-    bin_length = (max_depth - min_depth) / (n_bins)
-    increments = torch.rand(n_rays, n_bins, device=device) * bin_length
-    z_vals = lower_limits[None, :] + increments
-
-    return z_vals
-
+    
 
 def sampling_index(n_rays, batch_size, h, w):
 
