@@ -18,17 +18,16 @@ class CustomDataset(Dataset):
         self.poses =  np.load(self.poses_file).reshape(-1, 4, 4)
         self.focal =  np.load(self.focal_file)
 
-        self.train_ids = list(range(0, len(os.listdir(self.rgb_dir)), 3))
+        self.train_ids = list(range(0, len(os.listdir(self.rgb_dir)), 2))
         self.train_num = len(self.train_ids)
 
-        self.test_ids = [x + 2 for x in self.train_ids]
+        self.test_ids = [x + 1 for x in self.train_ids]
         self.test_num = len(self.test_ids)
 
-        self.rgb_list = sorted(glob.glob(self.rgb_dir + '/*.jpg'), key=lambda file_name: int(file_name.split("_")[-1][:-4]))
+        self.rgb_list = sorted(glob.glob(self.rgb_dir + '/*.jpg'), key=lambda file_name: int((os.path.split(file_name)[1])[:-4]))
 
         self.train_samples = {'image': [], 'depth': [], 'pose': []}
         self.test_samples = {'image': [], 'depth': [], 'pose': []}
-        
 
        # training samples
         for idx in self.train_ids:

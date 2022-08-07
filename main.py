@@ -12,13 +12,13 @@ if __name__=="__main__":
 
     parser.add_argument("--dataset", 
                         type=str, 
-                        default="replica", 
+                        default="custom", 
                         choices= ["replica", "lego", "custom"], 
                         help="the dataset to be used")
 
     parser.add_argument("--video", 
                         type=str, 
-                        default="true",
+                        default="false",
                         help="create video initially from previous models")
 
     args = parser.parse_args()
@@ -42,33 +42,33 @@ if __name__=="__main__":
 
         print("Video created")
 
-    # N_iters = int(config["train"]["N_iters"]) + 1
+    N_iters = int(config["train"]["N_iters"]) + 1
 
-    # print("###############################################################################")
-    # print("-------------------------- Begining of training loop -------------------------")
+    print("###############################################################################")
+    print("-------------------------- Begining of training loop -------------------------")
 
-    # try:
-    #     for i in range(0, N_iters):
+    try:
+        for i in range(0, N_iters):
 
-    #         step_start_time = time.time()
-    #         nerf_trainer.step(i)
-    #         step_end_time = time.time()
+            step_start_time = time.time()
+            nerf_trainer.step(i)
+            step_end_time = time.time()
 
-    #         step_duration = step_end_time - step_start_time
-    #         print(f"Finished step: {i}/{N_iters} --> Step duration: {step_duration}")
+            step_duration = step_end_time - step_start_time
+            print(f"Finished step: {i}/{N_iters} --> Step duration: {step_duration}")
 
-    #     print("Training finished")
+        print("Training finished")
 
-    #     print("------------------------------- Creating video --------------------------------")
-    #     nerf_trainer.create_video("video_final.mp4", use_current_models=True)
+        print("------------------------------- Creating video --------------------------------")
+        nerf_trainer.create_video("video_final.mp4", use_current_models=True)
 
-    #     print("Video created")
+        print("Video created")
 
-    # except KeyboardInterrupt:
-    #     print("###############################################################################")
-    #     print("---------------------------- Training Interupted ------------------------------")
+    except KeyboardInterrupt:
+        print("###############################################################################")
+        print("---------------------------- Training Interupted ------------------------------")
 
-    #     print("------------------------------- Creating video --------------------------------")
-    #     nerf_trainer.create_video("video_final_training_interupted.mp4", use_current_models=True)
+        print("------------------------------- Creating video --------------------------------")
+        nerf_trainer.create_video("video_final_training_interupted.mp4", use_current_models=True)
 
-    #     print("Video created")
+        print("Video created")

@@ -831,6 +831,9 @@ class NeRFTrainer:
             elif self.dataset_name == "replica":
                 poses = generate_new_poses(x=5.0)
 
+            elif self.dataset_name == "custom":
+                poses = generate_new_poses(z=0.3, phi=-30.0)
+
             rays = create_rays(poses.shape[0],
                                 poses, 
                                 self.H_scaled, 
