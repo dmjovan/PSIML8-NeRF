@@ -12,13 +12,13 @@ if __name__=="__main__":
 
     parser.add_argument("--dataset", 
                         type=str, 
-                        default="custom", 
+                        default="replica", 
                         choices= ["replica", "lego", "custom"], 
                         help="the dataset to be used")
 
     parser.add_argument("--video", 
                         type=str, 
-                        default="false",
+                        default="true",
                         help="create video initially from previous models")
 
     args = parser.parse_args()

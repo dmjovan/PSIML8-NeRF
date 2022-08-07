@@ -13,10 +13,10 @@ class CustomDataset(Dataset):
         
         self.rgb_dir = os.path.join(config["experiment"]["dataset_dir"], "images")
         self.poses_file = os.path.join(config["experiment"]["dataset_dir"], "poses.npy")
-        self.focal_file = os.path.join(config["experiment"]["dataset_dir"], 'focal.npy')
+        self.camera_file = os.path.join(config["experiment"]["dataset_dir"], 'camera_matrix.npy')
 
         self.poses =  np.load(self.poses_file).reshape(-1, 4, 4)
-        self.focal =  np.load(self.focal_file)
+        self.K =  np.load(self.camera_file).reshape(3, 3)
 
         self.train_ids = list(range(0, len(os.listdir(self.rgb_dir)), 2))
         self.train_num = len(self.train_ids)

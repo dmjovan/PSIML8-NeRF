@@ -1,6 +1,6 @@
 
 experiment:
-  save_dir: "C:/Users/psiml8/Desktop/Project/training_logs/custom/log1/" 
+  save_dir: "C:/Users/psiml8/Desktop/Project/training_logs/custom/log2/" 
   dataset_dir: "C:/Users/psiml8/Desktop/Project/datasets/custom/"
   convention: "opengl"
   width: 380
@@ -47,4 +47,4 @@ logging:
     step_render_train: 5000 # frequency of rendering on training data
     
 video:
-    prev_ckpt_path: "C:/Users/psiml8/Desktop/Project/training_logs/custom/log1/checkpoints/100000.ckpt" 
+    prev_ckpt_path: "C:/Users/psiml8/Desktop/Project/training_logs/custom/log2/checkpoints/100000.ckpt" 
