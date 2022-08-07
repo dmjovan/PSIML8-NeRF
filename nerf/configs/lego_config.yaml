@@ -47,4 +47,4 @@ logging:
     step_render_train: 250 # frequency of rendering on training data
     
 video:
-    prev_ckpt_path: "C:/Users/psiml8/Desktop/Project/training_logs/lego/log2/checkpoints/150000.ckpt" 
+    prev_ckpt_path: "C:/Users/psiml8/Desktop/Project/training_logs/lego/log3/checkpoints/050000.ckpt" 

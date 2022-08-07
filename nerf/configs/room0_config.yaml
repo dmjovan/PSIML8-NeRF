@@ -1,6 +1,6 @@
 
 experiment:
-  save_dir: "C:/Users/psiml8/Desktop/Project/training_logs/room_0/sequence_2/log2/" 
+  save_dir: "C:/Users/psiml8/Desktop/Project/training_logs/room_0/sequence_2/log3/" 
   dataset_dir: "C:/Users/psiml8/Desktop/Project/datasets/replica/room_0/Sequence_2/"
   convention: "opencv"
   width: 320

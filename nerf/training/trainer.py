@@ -788,11 +788,13 @@ class NeRFTrainer:
 
         return rgbs
 
-    def create_video(self, video_name):
-
+    def create_video(self, video_name, use_current_models=False):
+        
         ckpt_path = self.config["video"]["prev_ckpt_path"]
 
-        if os.path.exists(ckpt_path):
+        print("here", os.path.exists(ckpt_path))
+
+        if os.path.exists(ckpt_path) and not use_current_models:
 
             self.training = False
 
@@ -803,36 +805,49 @@ class NeRFTrainer:
 
             self.nerf_net_coarse.eval()
             self.nerf_net_fine.eval()
+        
+        elif not os.path.exists(ckpt_path) and not use_current_models:
+            print("Specified checkpoint doesn't exist!")
+            return
+
+        else:
+
+            self.training = False
+
+            self.nerf_net_coarse.eval()
+            self.nerf_net_fine.eval()
+
+        
+        video_save_dir = os.path.join(self.config["experiment"]["save_dir"], "videos")
+    
+        if not os.path.exists(video_save_dir):
+            os.makedirs(video_save_dir)   
+
+        with torch.no_grad():
             
-            with torch.no_grad():
-                
-                video_save_dir = os.path.join(self.config["experiment"]["save_dir"], "videos")
+            if self.dataset_name == "lego":
+                poses = generate_new_poses(z=4.0, phi=-30.0)
 
-                if not os.path.exists(video_save_dir):
-                    os.makedirs(video_save_dir)   
+            elif self.dataset_name == "replica":
+                poses = generate_new_poses(x=5.0)
 
-                poses = generate_new_poses()
+            rays = create_rays(poses.shape[0],
+                                poses, 
+                                self.H_scaled, 
+                                self.W_scaled, 
+                                self.fx_scaled, 
+                                self.fy_scaled,
+                                self.cx_scaled, 
+                                self.cy_scaled,
+                                self.depth_close_bound, 
+                                self.depth_far_bound, 
+                                use_viewdirs=self.use_viewdir, 
+                                convention=self.convention)
 
-                rays = create_rays(poses.shape[0],
-                                   poses, 
-                                   self.H_scaled, 
-                                   self.W_scaled, 
-                                   self.fx_scaled, 
-                                   self.fy_scaled,
-                                   self.cx_scaled, 
-                                   self.cy_scaled,
-                                   self.depth_close_bound, 
-                                   self.depth_far_bound, 
-                                   use_viewdirs=self.use_viewdir, 
-                                   convention=self.convention)
-
-                rgbs = self.render_path(rays, save_dir=video_save_dir, save_img=False)
-                
-                imageio.mimwrite(os.path.join(video_save_dir, video_name), to8b_np(rgbs), fps=30, quality=8)
+            rgbs = self.render_path(rays, save_dir=video_save_dir, save_img=False)
+            
+            imageio.mimwrite(os.path.join(video_save_dir, video_name), to8b_np(rgbs), fps=30, quality=8)
 
             self.training = True
             self.nerf_net_coarse.train()
             self.nerf_net_fine.train()
-        
-        else:
-            print("Specified checkpoint doesn't exist!")
