@@ -281,12 +281,100 @@ class NeRFTrainer:
         self.tensorboard.tb_writer.add_image('Test/rgb_ground_truth', test_samples["image"], 0, dataformats='NHWC')
 
     def set_data_params_custom(self):
-        # TODO
-        pass
+
+        self.H = self.config["experiment"]["height"]
+        self.W = self.config["experiment"]["width"]
+
+        self.n_pix = self.H * self.W
+        self.aspect_ratio = self.W / self.H
+
+        self.hfov = 90
+
+        # the pin-hole camera has the same value for fx and fy
+        self.fx = self.dataset.focal
+        self.fy = self.dataset.focal
+
+        self.cx = self.W // 2.0
+        self.cy = self.H // 2.0
+
+        self.depth_close_bound, self.depth_far_bound = self.config["render"]["depth_range"]
+        self.c2w_staticcam = None
+
+        # use scaled size for test and visualisation purpose
+        self.test_viz_factor = int(self.config["render"]["test_viz_factor"])
+        self.H_scaled = self.H//self.test_viz_factor
+        self.W_scaled = self.W//self.test_viz_factor
+        
+        self.fx_scaled = self.fx//self.test_viz_factor
+        self.fy_scaled = self.fy//self.test_viz_factor
+        self.cx_scaled = self.W_scaled // 2.0
+        self.cy_scaled = self.H_scaled // 2.0
 
     def prepare_data_custom(self):
-        # TODO
-        pass
+        
+        # shift numpy data to torch
+        train_samples = self.dataset.train_samples
+        test_samples = self.dataset.test_samples
+
+        self.train_ids = self.dataset.train_ids
+        self.test_ids = self.dataset.test_ids
+
+        self.num_train = self.dataset.train_num
+        self.num_test = self.dataset.test_num
+
+        ##### Train Data #####
+
+        # RGB
+        self.train_image = torch.from_numpy(train_samples["image"])
+        self.train_image_scaled = F.interpolate(self.train_image.permute(0,3,1,2,), 
+                                                scale_factor = 1/self.config["render"]["test_viz_factor"], 
+                                                mode='bilinear').permute(0,2,3,1)
+        # Depth
+        self.train_depth = torch.from_numpy(train_samples["depth"])
+        self.viz_train_depth = np.stack([depth2rgb(dep, min_value=self.depth_close_bound, max_value=self.depth_far_bound) for dep in train_samples["depth"]], axis=0) # [num_test, H, W, 3]
+        # process the depth for evaluation purpose
+        self.train_depth_scaled = F.interpolate(torch.unsqueeze(self.train_depth, dim=1).float(), 
+                                                                scale_factor = 1/self.config["render"]["test_viz_factor"], 
+                                                                mode='bilinear').squeeze(1).cpu().numpy()
+        # pose 
+        self.train_pose = torch.from_numpy(train_samples["pose"]).float()
+
+        ##### Test Data #####
+
+        # RGB
+        self.test_image = torch.from_numpy(test_samples["image"])  # [num_test, H, W, 3]
+        # scale the test image for evaluation purpose
+        self.test_image_scaled = F.interpolate(self.test_image.permute(0,3,1,2,), 
+                                               scale_factor = 1/self.config["render"]["test_viz_factor"], 
+                                               mode='bilinear').permute(0,2,3,1)
+        # Depth
+        self.test_depth = torch.from_numpy(test_samples["depth"])  # [num_test, H, W]
+        self.viz_test_depth = np.stack([depth2rgb(dep, min_value=self.depth_close_bound, max_value=self.depth_far_bound) for dep in test_samples["depth"]], axis=0) # [num_test, H, W, 3]
+        # process the depth for evaluation purpose
+        self.test_depth_scaled = F.interpolate(torch.unsqueeze(self.test_depth, dim=1).float(), 
+                                                            scale_factor=1/self.config["render"]["test_viz_factor"], 
+                                                            mode='bilinear').squeeze(1).cpu().numpy()
+        # pose 
+        self.test_pose = torch.from_numpy(test_samples["pose"]).float()  # [num_test, 4, 4]
+
+        self.train_image = self.train_image.cuda()
+        self.train_image_scaled = self.train_image_scaled.cuda()
+        self.train_depth = self.train_depth.cuda()
+
+        self.test_image = self.test_image.cuda()
+        self.test_image_scaled = self.test_image_scaled.cuda()
+        self.test_depth = self.test_depth.cuda()
+
+        # set the data sampling paras which need the number of training images
+        if self.no_batching is False: # False means we need to sample from all rays instead of rays from one random image
+            self.i_batch = 0
+            self.rand_idx = torch.randperm(self.num_train * self.H * self.W)
+
+        # add datasets to tfboard for comparison to rendered images
+        self.tensorboard.tb_writer.add_image('Train/rgb_ground_truth', train_samples["image"], 0, dataformats='NHWC')
+
+        self.tensorboard.tb_writer.add_image('Test/rgb_ground_truth', test_samples["image"], 0, dataformats='NHWC')
+
 
     def init_rays(self):
         

@@ -1,4 +1,6 @@
 import os
+import cv2
+import glob
 import numpy as np
 from torch.utils.data import Dataset
 
@@ -8,27 +10,29 @@ class CustomDataset(Dataset):
         
         self.img_h=config["experiment"]["height"]
         self.img_w=config["experiment"]["width"]
-
-        self.rgb_file = os.path.join(config["experiment"]["dataset_dir"], 'images.npy')
-        self.poses_file = os.path.join(config["experiment"]["dataset_dir"], 'poses.npy')
+        
+        self.rgb_dir = os.path.join(config["experiment"]["dataset_dir"], "images")
+        self.poses_file = os.path.join(config["experiment"]["dataset_dir"], "poses.npy")
         self.focal_file = os.path.join(config["experiment"]["dataset_dir"], 'focal.npy')
 
-        self.rgb_list = np.load(self.rgb_file).reshape(-1, 100, 100, 3)
         self.poses =  np.load(self.poses_file).reshape(-1, 4, 4)
         self.focal =  np.load(self.focal_file)
 
-        self.train_ids = np.random.randint(low=0, high=self.rgb_list.shape[0], size=self.rgb_list.shape[0]-20)
+        self.train_ids = list(range(0, len(os.listdir(self.rgb_dir)), 3))
         self.train_num = len(self.train_ids)
 
-        self.test_ids = list(set(range(0, self.rgb_list.shape[0])).difference(self.train_ids))
+        self.test_ids = [x + 2 for x in self.train_ids]
         self.test_num = len(self.test_ids)
+
+        self.rgb_list = sorted(glob.glob(self.rgb_dir + '/*.jpg'), key=lambda file_name: int(file_name.split("_")[-1][:-4]))
 
         self.train_samples = {'image': [], 'depth': [], 'pose': []}
         self.test_samples = {'image': [], 'depth': [], 'pose': []}
+        
 
        # training samples
         for idx in self.train_ids:
-            image = self.rgb_list[idx]
+            image = cv2.imread(self.rgb_list[idx])[:,:,::-1] / 255.0
             depth = np.random.uniform(low=config["render"]["depth_range"][0]/config["render"]["depth_range"][1], high=1.0, size=image[:,:,0].shape)
             pose = self.poses[idx]
 
@@ -38,7 +42,7 @@ class CustomDataset(Dataset):
 
         # test samples
         for idx in self.test_ids:
-            image = self.rgb_list[idx]
+            image = cv2.imread(self.rgb_list[idx])[:,:,::-1] / 255.0
             depth = np.random.uniform(low=config["render"]["depth_range"][0]/config["render"]["depth_range"][1], size=image[:,:,0].shape)
             pose = self.poses[idx]
 
