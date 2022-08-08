@@ -11,18 +11,18 @@ class CustomDataset(Dataset):
         self.img_h=config["experiment"]["height"]
         self.img_w=config["experiment"]["width"]
         
-        self.rgb_dir = os.path.join(config["experiment"]["dataset_dir"], "images")
-        self.poses_file = os.path.join(config["experiment"]["dataset_dir"], "poses.npy")
+        self.rgb_dir = os.path.join(config["experiment"]["dataset_dir"], "images1")
+        self.poses_file = os.path.join(config["experiment"]["dataset_dir"], "poses_old.npy")
         self.camera_file = os.path.join(config["experiment"]["dataset_dir"], 'camera_matrix.npy')
 
         self.poses =  np.load(self.poses_file).reshape(-1, 4, 4)
         self.K =  np.load(self.camera_file).reshape(3, 3)
 
-        self.train_ids = list(range(0, len(os.listdir(self.rgb_dir)), 2))
-        self.train_num = len(self.train_ids)
+        self.train_ids = list(range(0, 40))
+        self.train_num = 40
 
-        self.test_ids = [x + 1 for x in self.train_ids]
-        self.test_num = len(self.test_ids)
+        self.test_ids = list(range(40, 50))
+        self.test_num = 10
 
         self.rgb_list = sorted(glob.glob(self.rgb_dir + '/*.jpg'), key=lambda file_name: int((os.path.split(file_name)[1])[:-4]))
 
@@ -32,6 +32,7 @@ class CustomDataset(Dataset):
        # training samples
         for idx in self.train_ids:
             image = cv2.imread(self.rgb_list[idx])[:,:,::-1] / 255.0
+
             depth = np.random.uniform(low=config["render"]["depth_range"][0]/config["render"]["depth_range"][1], high=1.0, size=image[:,:,0].shape)
             pose = self.poses[idx]
 
