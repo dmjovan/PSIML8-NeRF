@@ -43,7 +43,7 @@ class CustomDataset(Dataset):
         # test samples
         for idx in self.test_ids:
             image = cv2.imread(self.rgb_list[idx])[:,:,::-1] / 255.0
-            depth = np.random.uniform(low=config["render"]["depth_range"][0]/config["render"]["depth_range"][1], size=image[:,:,0].shape)
+            depth = np.random.uniform(low=config["render"]["depth_range"][0]/config["render"]["depth_range"][1], high=1.0, size=image[:,:,0].shape)
             pose = self.poses[idx]
 
             self.test_samples["image"].append(image)
